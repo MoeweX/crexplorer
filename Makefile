@@ -9,4 +9,5 @@ push:
 	docker push $(REPO)/crexplorer
 
 run:
-	docker run -it $(REPO)/crexplorer
+	docker rm crexplorer || true
+	docker run --name crexplorer -it $(REPO)/crexplorer
