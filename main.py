@@ -87,6 +87,7 @@ def single_run(max_memory):
         longstring.append("1" * 10**6)
         if (x >= start_printing):
             log("{0!s}mb".format(len(longstring)))
+    longstring = []
 
     log("\nWas able to allocate all needed memory")
 
