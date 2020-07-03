@@ -10,8 +10,11 @@ Typical CRExplorer workflow:
 
 If you cloned the [GitHub Repository](https://github.com/MoeweX/crexplorer), you can use `make` to build and run the container.
 
-## Local installation
+## Get CRExplorer
 
 ```bash
+# install sources
 pip3 install -r requirements.txt
 ```
+
+A pre-build container is available in the [Docker Hub](https://hub.docker.com/repository/docker/hasenburg/crexplorer).
