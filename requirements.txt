@@ -1,1 +1,2 @@
 cherrypy==18.6.0
+pythonping==1.0.10 

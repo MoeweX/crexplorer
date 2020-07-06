@@ -7,6 +7,7 @@ import time
 import cherrypy
 import os
 from datetime import datetime
+from pythonping import ping
 
 try:
     logFilePath = os.environ["LOGFILE"]
@@ -91,20 +92,38 @@ def single_run(max_memory):
 
     log("\nWas able to allocate all needed memory")
 
+def ping_helper(targetAddress):
+    while True:
+        log("Ping to {0!s} is {1!s}ms".format(targetAddress, ping(targetAddress, count=1).rtt_avg_ms))
+        time.sleep(5)
+
+def webserver_helper():
+    conf = {
+        "global": {
+            "server.socket_port": int(os.environ["PORT"]),
+            "server.socket_host": "0.0.0.0"
+        }
+    }
+    cherrypy.quickstart(Server(), "/", conf)
+
 if __name__ == "__main__":
 
-    if "PORT" in os.environ:
-        conf = {
-            "global": {
-                "server.socket_port": int(os.environ["PORT"]),
-                "server.socket_host": "0.0.0.0"
-            }
-        }
+    if "PING" in os.environ:
+        log("Starting to ping " + os.environ["PING"])
+        pingP = multiprocessing.Process(target=ping_helper, args=(os.environ["PING"],))
+        pingP.start()
+    else:
+        log("Pinging is disabled, to enable provide a PING environment variable that contains the target address")
 
+    if "PORT" in os.environ:
         log("Starting CRExplorer webserver at port {0!s}, a request could look like http://localhost:{0!s}/run?max_memory=30".format(os.environ["PORT"]))
-        cherrypy.quickstart(Server(), "/", conf)
+        serverP = multiprocessing.Process(target=webserver_helper)
+        serverP.start()
+        input("Press a key to exit")
+        os.exit(0)
     else:
         # parse input
         memory_s = input("How much megabyte of memory should we allocate? Enter a number: ")
         max_memory = int(memory_s)
         single_run(max_memory)
+        os._exit(0)
