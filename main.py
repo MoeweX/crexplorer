@@ -54,6 +54,16 @@ class Server(object):
         single_run(int(max_memory))
         return("Run completed, results are written to console.")
 
+    @cherrypy.expose
+    def state(self, state_name="[was not provided by server]"):
+        log("#############################")
+        log("#############################")
+        log("Now in state " + state_name)
+        log("#############################")
+        log("#############################")
+        return("Ok")
+
+
 def single_run(max_memory):
     start_printing = max(max_memory - 100, int(max_memory / 2))
 
@@ -97,7 +107,7 @@ def single_run(max_memory):
 def ping_helper(targetAddress):
     while True:
         log("Ping to {0!s} is {1!s}ms".format(targetAddress, ping(targetAddress, count=1).rtt_avg_ms))
-        time.sleep(5)
+        time.sleep(2)
 
 def webserver_helper():
     conf = {
