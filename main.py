@@ -13,8 +13,10 @@ try:
     logFilePath = os.environ["LOGFILE"]
     logFile = open(logFilePath, "a", 1)
     print("Writing logs to " + logFilePath)
-except Exception as e:
+except KeyError as e:
     print("Logging to file is disabled, to enable provide a LOGFILE environment variable")
+except Exception as e:
+    print(repr(e))
 
 def log(text):
     now = datetime.now()
