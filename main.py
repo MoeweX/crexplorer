@@ -8,6 +8,7 @@ import cherrypy
 import os
 from datetime import datetime
 from pythonping import ping
+import requests
 
 try:
     logFilePath = os.environ["LOGFILE"]
@@ -48,11 +49,25 @@ def parallized_fibonacci_benchmark(i, runs_per_core, measurements):
     t = Timer(lambda: fibonacci(10000))
     measurements[i] = t.repeat(number=runs_per_core, repeat=3)
 
+def send_benchmark_completed_message(event_name):
+    if "EVENT_ENDPOINT" in os.environ:
+        url = os.environ["EVENT_ENDPOINT"] + "?event_name=" + event_name
+        log("Sending benchmark completed message to " + url)
+        x = requests.get('https://w3schools.com')
+        log("Status code was " + str(x.status_code))
+
 class Server(object):
+
     @cherrypy.expose
     def run(self, max_memory=10):
         single_run(int(max_memory))
         return("Run completed, results are written to console.")
+
+    @cherrypy.expose
+    def prepare(self, max_memory=10):
+        self.prepared_mem = int(max_memory)
+        log("Prepared run, max_memory is " + str(max_memory))
+        return("Prepared")
 
     @cherrypy.expose
     def state(self, state_name="[was not provided by server]"):
@@ -61,8 +76,9 @@ class Server(object):
         log("Now in state " + state_name)
         log("#############################")
         log("#############################")
+        p = multiprocessing.Process(target=single_run, args=(self.prepared_mem,))
+        p.start()
         return("Ok")
-
 
 def single_run(max_memory):
     start_printing = max(max_memory - 100, int(max_memory / 2))
@@ -94,6 +110,8 @@ def single_run(max_memory):
     std  = math.sqrt(var)  # standard deviation
     log("CPU-Time needed for CPU benchmark: {0!s}s (SD={1!s}s)".format(mean, std))
 
+    send_benchmark_completed_message("cpu")
+
     log("Trying to allocate up to {1!s}mb of memory, printing allocated amount starting at {0!s}mb:".format(start_printing, max_memory))
     longstring = []
     for x in range(1, max_memory + 1):
@@ -101,8 +119,9 @@ def single_run(max_memory):
         if (x >= start_printing):
             log("{0!s}mb".format(len(longstring)))
     longstring = []
-
     log("\nWas able to allocate all needed memory")
+
+    send_benchmark_completed_message("memory")
 
 def ping_helper(targetAddress):
     while True:
