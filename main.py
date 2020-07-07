@@ -53,7 +53,7 @@ def send_benchmark_completed_message(event_name):
     if "EVENT_ENDPOINT" in os.environ:
         url = os.environ["EVENT_ENDPOINT"] + "?event_name=" + event_name
         log("Sending benchmark completed message to " + url)
-        x = requests.get('https://w3schools.com')
+        x = requests.get(url)
         log("Status code was " + str(x.status_code))
 
 class Server(object):
